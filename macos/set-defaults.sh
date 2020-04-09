@@ -71,10 +71,21 @@ defaults write com.apple.Dock orientation -string "left"
 defaults write com.apple.dock show-recents -bool FALSE
 killall Dock
 
-# Power set display sleep 'never' on adapter, 25m on battery
+# Power set display sleep 3h on adapter, 10m on battery
 sudo pmset sleep 0
-sudo pmset -a displaysleep 0
-sudo pmset -b displaysleep 25
+sudo pmset -a displaysleep 180
+sudo pmset -b displaysleep 10
+
+# Check and warn about GUI scripting
+sudo osascript <<EOD
+tell application "System Events"
+	# If we don't have UI Elements enabled, then nothing is really going to work.
+	if not UI elements enabled then
+		# GUI scripting not enabled.  Display an alert
+		display dialog "UI element scripting is not enabled. Please activate \"Enable access for assistive devices\""
+	end if
+end tell
+EOD
 
 # Power disable slightly dimming display on battery
 sudo osascript <<EOD
@@ -83,94 +94,84 @@ tell application "System Preferences"
 	reveal (pane id "com.apple.preference.energysaver")
 end tell
 delay 0.5
-tell application "System Events"
-	-- If we don't have UI Elements enabled, then nothing is really going to work.
-	if UI elements enabled then
-		tell application process "System Preferences" to tell window "Energy Saver" to tell tab group 1
-			click radio button "Battery"
-			set theCheckbox to checkbox "Slightly dim the display while on battery power" of list 2
-			tell theCheckbox
-				if (its value as boolean) then click theCheckbox
-			end tell
-		end tell
-		tell application "System Preferences" to quit
-	else
-		-- GUI scripting not enabled.  Display an alert
-		tell application "System Preferences"
-			activate
-			set current pane to pane "com.apple.preference.energysaver"
-			display dialog "UI element scripting is not enabled. Please activate \"Enable access for assistive devices\""
-		end tell
-	end if
+tell application "System Events" to tell application process "System Preferences" to tell window "Energy Saver" to tell tab group 1
+	click radio button "Battery"
+	set theCheckbox to checkbox "Slightly dim the display while on battery power" of list 2
+	tell theCheckbox
+		if (its value as boolean) then click theCheckbox
+	end tell
 end tell
+tell application "System Preferences" to quit
 EOD
 
 # Set use function-keys and hide input menu bar
+if pgrep "TouchBarServer"; then
 sudo osascript <<EOD
 tell application "System Preferences"
 	activate
 	reveal (pane id "com.apple.preference.keyboard")
 end tell
 delay 0.5
-tell application "System Events"
-	-- If we don't have UI Elements enabled, then nothing is really going to work.
-	if UI elements enabled then
-		tell application process "System Preferences" to tell window "Keyboard" to tell tab group 1
-			click radio button "Keyboard"
-			set theCheckbox to checkbox "Use F1, F2, etc. keys as standard function keys"
-			tell theCheckbox
-				if not (its value as boolean) then click theCheckbox
-			end tell
+tell application "System Events" to tell application process "System Preferences" to tell window "Keyboard" to tell tab group 1
+	click radio button "Keyboard"
+	click radio button "Keyboard"
+	tell pop up button 2
+		click
+		delay 0.1
+		click menu item "F1, F2, etc. Keys" of menu 1
+	end tell
 
-			click radio button "Input Sources"
-			set theCheckbox to checkbox "Show Input menu in menu bar"
-			tell theCheckbox
-				if (its value as boolean) then click theCheckbox
-			end tell
-		end tell
-		tell application "System Preferences" to quit
-	else
-		-- GUI scripting not enabled.  Display an alert
-		tell application "System Preferences"
-			activate
-			set current pane to pane "com.apple.preference.keyboard"
-			display dialog "UI element scripting is not enabled. Please activate \"Enable access for assistive devices\""
-		end tell
-	end if
+	click radio button "Input Sources"
+	set theCheckbox to checkbox "Show Input menu in menu bar"
+	tell theCheckbox
+		if (its value as boolean) then click theCheckbox
+	end tell
 end tell
+tell application "System Preferences" to quit
 EOD
+else
+sudo osascript <<EOD
+tell application "System Preferences"
+	activate
+	reveal (pane id "com.apple.preference.keyboard")
+end tell
+delay 0.5
+tell application "System Events" to tell application process "System Preferences" to tell window "Keyboard" to tell tab group 1
+	click radio button "Keyboard"
+	set theCheckbox to checkbox "Use F1, F2, etc. keys as standard function keys"
+	tell theCheckbox
+		if not (its value as boolean) then click theCheckbox
+	end tell
+	
+	click radio button "Input Sources"
+	set theCheckbox to checkbox "Show Input menu in menu bar"
+	tell theCheckbox
+		if (its value as boolean) then click theCheckbox
+	end tell
+end tell
+tell application "System Preferences" to quit
+EOD
+fi
 
 # trackpad sensitivity and mission control four fingers slide setting
 sudo osascript <<EOD
-set trackingValue to 4
+set trackingValue to 5
 tell application "System Preferences"
 	activate
 	reveal (pane id "com.apple.preference.trackpad")
 end tell
 delay 0.5
-tell application "System Events"
-	-- If we don't have UI Elements enabled, then nothing is really going to work.
-	if UI elements enabled then
-		tell application process "System Preferences" to tell window "Trackpad"
-			click radio button "Point & Click" of tab group 1
-			set value of slider 1 of tab group 1 to trackingValue
+tell application "System Events" to tell application process "System Preferences" to tell window "Trackpad"
+	click radio button "Point & Click" of tab group 1
+	set value of slider "Tracking speed" of tab group 1 to trackingValue
 
-			click radio button "More Gestures" of tab group 1
-			tell menu button 3 of tab group 1
-				click
-				click menu item "Swipe up with four fingers" of menu 1
-			end tell
-		end tell
-		tell application "System Preferences" to quit
-	else
-		-- GUI scripting not enabled.  Display an alert
-		tell application "System Preferences"
-			activate
-			set current pane to pane "com.apple.preference.trackpad"
-			display dialog "UI element scripting is not enabled. Please activate \"Enable access for assistive devices\""
-		end tell
-	end if
+	click radio button "More Gestures" of tab group 1
+	tell menu button 3 of tab group 1
+		click
+		click menu item "Swipe up with four fingers" of menu 1
+	end tell
 end tell
+tell application "System Preferences" to quit
 EOD
 
 # 3-finger drag
@@ -180,71 +181,48 @@ tell application "System Preferences"
 	reveal (pane id "com.apple.preference.universalaccess")
 end tell
 delay 0.5
-tell application "System Events"
-	-- If we don't have UI Elements enabled, then nothing is really going to work.
-	if UI elements enabled then
-		tell application process "System Preferences" to tell window "Accessibility"
-			tell scroll area 1 to tell table 1 to tell row 14 #open Pointer Control
-				select
-			end tell
-			tell group 1 to tell tab group 1 to tell button "Trackpad Options…"
-				click
-			end tell
-			set theCheckbox to checkbox "Enable dragging" of sheet 1
-			tell theCheckbox
-				if not (its value as boolean) then click theCheckbox
-			end tell
-			tell pop up button 1 of sheet 1
-				click
-				delay 0.1
-				click menu item "three finger drag" of menu 1
-			end tell
-			click button "OK" of sheet 1
-		end tell
-		tell application "System Preferences" to quit
-	else
-		-- GUI scripting not enabled.  Display an alert
-		tell application "System Preferences"
-			activate
-			set current pane to pane "com.apple.preference.universalaccess"
-			display dialog "UI element scripting is not enabled. Please activate \"Enable access for assistive devices\""
-		end tell
-	end if
+tell application "System Events" to tell application process "System Preferences" to tell window "Accessibility"
+	tell scroll area 1 to tell table 1 to tell row 14 #open Pointer Control
+		select
+	end tell
+	tell group 1 to tell tab group 1 to tell button "Trackpad Options…"
+		click
+	end tell
+	set theCheckbox to checkbox "Enable dragging" of sheet 1
+	tell theCheckbox
+		if not (its value as boolean) then click theCheckbox
+	end tell
+	tell pop up button 1 of sheet 1
+		click
+		delay 0.1
+		click menu item "three finger drag" of menu 1
+	end tell
+	click button "OK" of sheet 1
 end tell
+tell application "System Preferences" to quit
 EOD
 
 # Set screen resolution to more space and don't auto adjust brightness
 sudo osascript <<EOD
+set resolutionValue to 5 # More space like 1920 x 1080
 tell application "System Preferences"
 	activate
 	reveal (pane id "com.apple.preference.displays")
 end tell
 delay 0.5
-tell application "System Events"
-	-- If we don't have UI Elements enabled, then nothing is really going to work.
-	if UI elements enabled then
-		tell application process "System Preferences" to tell window "Built-in Retina Display"
-			tell tab group 1
-				set theCheckbox to checkbox "Automatically adjust brightness"
-				tell theCheckbox
-					if (its value as boolean) then click theCheckbox
-				end tell
-				click radio button "Scaled"
-				tell radio group 1 of group 1
-					click radio button 4
-				end tell
-			end tell
+tell application "System Events" to tell application process "System Preferences" to tell window "Built-in Retina Display"
+	tell tab group 1
+		set theCheckbox to checkbox "Automatically adjust brightness"
+		tell theCheckbox
+			if (its value as boolean) then click theCheckbox
 		end tell
-		tell application "System Preferences" to quit
-	else
-		-- GUI scripting not enabled.  Display an alert
-		tell application "System Preferences"
-			activate
-			set current pane to pane "com.apple.preference.displays"
-			display dialog "UI element scripting is not enabled. Please activate \"Enable access for assistive devices\""
+		click radio button "Scaled"
+		tell radio group 1 of group 1
+			click radio button resolutionValue
 		end tell
-	end if
+	end tell
 end tell
+tell application "System Preferences" to quit
 EOD
 
 # Sound enable menu bar
@@ -254,25 +232,13 @@ tell application "System Preferences"
 	reveal (pane id "com.apple.preference.sound")
 end tell
 delay 0.5
-tell application "System Events"
-	-- If we don't have UI Elements enabled, then nothing is really going to work.
-	if UI elements enabled then
-		tell application process "System Preferences" to tell window "Sound"
-			set theCheckbox to checkbox "Show volume in menu bar"
-			tell theCheckbox
-				if not (its value as boolean) then click theCheckbox
-			end tell
-		end tell
-		tell application "System Preferences" to quit
-	else
-		-- GUI scripting not enabled.  Display an alert
-		tell application "System Preferences"
-			activate
-			set current pane to pane "com.apple.preference.sound"
-			display dialog "UI element scripting is not enabled. Please activate \"Enable access for assistive devices\""
-		end tell
-	end if
+tell application "System Events" to tell application process "System Preferences" to tell window "Sound"
+	set theCheckbox to checkbox "Show volume in menu bar"
+	tell theCheckbox
+		if not (its value as boolean) then click theCheckbox
+	end tell
 end tell
+tell application "System Preferences" to quit
 EOD
 
 # Show bluetooth input bar 
@@ -282,25 +248,13 @@ tell application "System Preferences"
 	reveal (pane id "com.apple.preferences.bluetooth")
 end tell
 delay 0.5
-tell application "System Events"
-	-- If we don't have UI Elements enabled, then nothing is really going to work.
-	if UI elements enabled then
-		tell application process "System Preferences" to tell window "Bluetooth"
-			set theCheckbox to checkbox "Show Bluetooth in menu bar"
-			tell theCheckbox
-				if not (its value as boolean) then click theCheckbox
-			end tell
-		end tell
-		tell application "System Preferences" to quit
-	else
-		-- GUI scripting not enabled.  Display an alert
-		tell application "System Preferences"
-			activate
-			set current pane to pane "com.apple.preferences.bluetooth"
-			display dialog "UI element scripting is not enabled. Please activate \"Enable access for assistive devices\""
-		end tell
-	end if
+tell application "System Events" to tell application process "System Preferences" to tell window "Bluetooth"
+	set theCheckbox to checkbox "Show Bluetooth in menu bar"
+	tell theCheckbox
+		if not (its value as boolean) then click theCheckbox
+	end tell
 end tell
+tell application "System Preferences" to quit
 EOD
 
 # Enable SSH
@@ -310,21 +264,9 @@ tell application "System Preferences"
 	reveal (pane id "com.apple.preferences.sharing")
 end tell
 delay 0.5
-tell application "System Events"
-	-- If we don't have UI Elements enabled, then nothing is really going to work.
-	if UI elements enabled then
-		tell application process "System Preferences" to tell window "Sharing"
-			set theRow to item 1 of (rows of table 1 of scroll area 1 of group 1 whose value of static text 1 is "Remote Login")
-			if (value of checkbox 1 of theRow) is equal to 0 then click checkbox 1 of theRow
-		end tell
-		tell application "System Preferences" to quit
-	else
-		-- GUI scripting not enabled.  Display an alert
-		tell application "System Preferences"
-			activate
-			set current pane to pane "com.apple.preferences.sharing"
-			display dialog "UI element scripting is not enabled. Please activate \"Enable access for assistive devices\""
-		end tell
-	end if
+tell application "System Events" to tell application process "System Preferences" to tell window "Sharing"
+	set theRow to item 1 of (rows of table 1 of scroll area 1 of group 1 whose value of static text 1 is "Remote Login")
+	if (value of checkbox 1 of theRow) is equal to 0 then click checkbox 1 of theRow
 end tell
+tell application "System Preferences" to quit
 EOD
