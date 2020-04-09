@@ -174,8 +174,9 @@ end tell
 tell application "System Preferences" to quit
 EOD
 
-# 3-finger drag
+# Set trackpad scrolling speed value and 3-finger drag
 sudo osascript <<EOD
+set scrollingSpeedValue to 5
 tell application "System Preferences"
 	activate
 	reveal (pane id "com.apple.preference.universalaccess")
@@ -192,6 +193,7 @@ tell application "System Events" to tell application process "System Preferences
 	tell theCheckbox
 		if not (its value as boolean) then click theCheckbox
 	end tell
+	set value of slider 1 of sheet 1 to scrollingSpeedValue
 	tell pop up button 1 of sheet 1
 		click
 		delay 0.1
