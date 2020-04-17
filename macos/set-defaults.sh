@@ -36,6 +36,9 @@ defaults write com.apple.frameworks.diskimages auto-open-ro-root -bool true
 defaults write com.apple.frameworks.diskimages auto-open-rw-root -bool true
 defaults write com.apple.finder OpenWindowForNewRemovableDisk -bool true
 
+# Show status bar in Finder
+defaults write com.apple.finder ShowStatusBar -bool true
+
 # Always show scrollbars
 defaults write NSGlobalDomain AppleShowScrollBars -string "Always"
 
@@ -75,6 +78,9 @@ killall Dock
 sudo pmset sleep 0
 sudo pmset -a displaysleep 180
 sudo pmset -b displaysleep 10
+
+# Screen saver password lock
+/usr/bin/profiles -I -F askforpassworddelay.config
 
 # Check and warn about GUI scripting
 sudo osascript <<EOD
