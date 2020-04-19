@@ -37,3 +37,10 @@ bindkey '^[[5D' beginning-of-line
 bindkey '^[[5C' end-of-line
 bindkey '^[[3~' delete-char
 bindkey '^?' backward-delete-char
+
+# search history with fzf if installed, default otherwise
+if test -d /usr/local/opt/fzf/shell; then
+	. /usr/local/opt/fzf/shell/key-bindings.zsh
+else
+	bindkey '^R' history-incremental-search-backward
+fi

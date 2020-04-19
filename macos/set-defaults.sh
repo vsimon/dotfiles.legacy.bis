@@ -39,6 +39,15 @@ defaults write com.apple.finder OpenWindowForNewRemovableDisk -bool true
 # Show status bar in Finder
 defaults write com.apple.finder ShowStatusBar -bool true
 
+# Save to disk by default, instead of iCloud
+defaults write NSGlobalDomain NSDocumentSaveNewDocumentsToCloud -bool false
+
+# Display full POSIX path as Finder window title
+defaults write com.apple.finder _FXShowPosixPathInTitle -bool true
+
+# Disable the warning when changing a file extension
+defaults write com.apple.finder FXEnableExtensionChangeWarning -bool false
+
 # Always show scrollbars
 defaults write NSGlobalDomain AppleShowScrollBars -string "Always"
 
@@ -78,9 +87,6 @@ killall Dock
 sudo pmset sleep 0
 sudo pmset -a displaysleep 180
 sudo pmset -b displaysleep 10
-
-# Screen saver password lock
-/usr/bin/profiles -I -F askforpassworddelay.config
 
 # Check and warn about GUI scripting
 sudo osascript <<EOD
@@ -275,6 +281,42 @@ delay 0.5
 tell application "System Events" to tell application process "System Preferences" to tell window "Sharing"
 	set theRow to item 1 of (rows of table 1 of scroll area 1 of group 1 whose value of static text 1 is "Remote Login")
 	if (value of checkbox 1 of theRow) is equal to 0 then click checkbox 1 of theRow
+end tell
+tell application "System Preferences" to quit
+EOD
+
+# Screen saver start after Never
+sudo osascript <<EOD
+tell application "System Preferences"
+	activate
+	reveal (pane id "com.apple.preference.desktopscreeneffect")
+end tell
+delay 0.5
+tell application "System Events" to tell application process "System Preferences" to tell window "Desktop & Screen Saver" to tell tab group 1 to tell pop up button 1
+	click
+	delay 0.1
+	click menu item "Never" of menu 1
+end tell
+tell application "System Preferences" to quit
+EOD
+
+# Screen saver password lock delay
+sudo osascript <<EOD
+set delayValue to "4 Hours"
+tell application "System Preferences"
+	activate
+	reveal (pane id "com.apple.preference.security")
+end tell
+delay 0.5
+tell application "System Events" to tell application process "System Preferences" to tell window "Security & Privacy" to tell tab group 1
+	set theButton to pop up button 1
+	tell theButton
+		if not (its value as string) is delayValue then
+			click
+			delay 0.1
+			click menu item delayValue of menu 1
+		end if
+	end tell
 end tell
 tell application "System Preferences" to quit
 EOD
