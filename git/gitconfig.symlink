@@ -16,7 +16,7 @@
         ui = true
 [core]
         excludesfile = ~/.gitignore
-        editor = emacs
+        editor = code --wait
 [apply]
         whitespace = nowarn
 [mergetool]
