@@ -1,6 +1,6 @@
 # Update the status bar every interval seconds.  By default, updates will occur
 # every 15 seconds.  A setting of zero disables redrawing at interval.
-set  -g status-interval 5
+set -g status-interval 5
 
 # Set the position of the window list component of the status line: left,
 # centre or right justified.
