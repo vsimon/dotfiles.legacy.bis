@@ -1,0 +1,1 @@
+alias awsve='aws-vault exec'
