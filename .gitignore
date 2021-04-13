@@ -1,3 +1,4 @@
 git/gitconfig.local.symlink
 homebrew/Brewfile.lock.json
 zsh/zsh_history.symlink
+kubernetes/aliases.local.zsh
