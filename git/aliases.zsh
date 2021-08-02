@@ -1,11 +1,9 @@
 # The rest of my fun git aliases
 alias gl='git log'
-alias gp='git push origin HEAD'
 alias gf='git fetch --all --prune'
-alias grom='git rebase origin/master'
-alias gpom='git push origin master'
-alias gprune='git branch --merged master | grep -v 'master$' | xargs git branch -d'
-alias gsgr='git stash && git fetch && git rebase origin/master && git stash pop'
+alias grom='git rebase $(git symbolic-ref --short refs/remotes/origin/HEAD)'
+alias gprune='master=$(basename $(git symbolic-ref --short refs/remotes/origin/HEAD)); git branch --merged $master | grep -v "${master}$" | xargs git branch -d'
+alias gsgr='git stash && git fetch && git rebase $(git symbolic-ref --short refs/remotes/origin/HEAD) && git stash pop'
 alias gcan='git commit -a --amend --no-edit'
 
 alias gd='git diff'
