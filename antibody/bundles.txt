@@ -1,5 +1,5 @@
-
 # this block is in alphabetic order
+ohmyzsh/ohmyzsh path:plugins/aws
 rupa/z
 zsh-users/zsh-completions
 zsh-users/zsh-autosuggestions
