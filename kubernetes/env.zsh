@@ -1,1 +1,1 @@
-HELM_DIFF_COLOR=true
+export HELM_DIFF_COLOR=true
